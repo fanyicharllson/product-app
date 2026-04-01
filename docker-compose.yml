@@ -1,0 +1,74 @@
+services:
+  # ── MySQL Database ──────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: productapp_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword 
+      MYSQL_DATABASE: productdb 
+      MYSQL_USER: appuser #
+      MYSQL_PASSWORD: apppassword 
+    ports:
+      - "3307:3306" 
+        
+    volumes:
+      - db_data:/var/lib/mysql 
+    networks:
+      - app_network
+    healthcheck:
+      
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "appuser",
+          "-papppassword",
+        ]
+      interval: 5s 
+      timeout: 3s 
+      retries: 10 
+  # ── Web Application ─────────────────────────────────────────────────────────
+  app:
+    build: . 
+    container_name: productapp_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000" 
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306 
+      DB_USER: appuser
+      DB_PASSWORD: apppassword
+      DB_NAME: productdb
+      SESSION_SECRET: super_secret_change_in_production
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+  # Adminer is a lightweight web-based MySQL client for managing the database.
+  adminer:
+    image: adminer:latest
+    container_name: productapp_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080" 
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network    
+
+
+volumes:
+  db_data:
+
+networks:
+  app_network:
+    driver: bridge
