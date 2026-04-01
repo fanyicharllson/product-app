@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth";
 import productRoutes from "./routes/products";
+import requireAuth from "./middleware/requireAuth";
 
 dotenv.config();
 
@@ -37,6 +38,14 @@ app.use(
     },
   }),
 );
+
+app.get("/search.html", requireAuth, (_req, res) => {
+  // Prevent browser back-button showing stale protected content after logout.
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  res.sendFile(path.join(__dirname, "../public/search.html"));
+});
 
 app.use(express.static(path.join(__dirname, "../public")));
 

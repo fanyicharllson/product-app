@@ -265,6 +265,48 @@
     const statusEl    = document.getElementById('statusText');
     const logoutBtn   = document.getElementById('logoutBtn');
 
+    function renderProducts(items) {
+      resultsEl.innerHTML = items.map((p, i) => `
+        <div class="product-card" style="animation-delay:${i * 50}ms">
+          <div class="product-id">#${p.id}</div>
+          <div class="product-info">
+            <div class="product-name">${escapeHtml(p.name)}</div>
+            <div class="product-desc">${escapeHtml(p.description || 'No description available.')}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Show some in-stock products on page load so the screen is never empty.
+    async function loadInitialProducts() {
+      try {
+        const res = await fetch('/products', { credentials: 'include' });
+
+        if (res.status === 302 || res.redirected) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          statusEl.textContent = data.error || 'Could not load products.';
+          return;
+        }
+
+        const items = (data.results || []).slice(0, 8);
+        if (items.length === 0) {
+          statusEl.textContent = 'No products in stock yet.';
+          resultsEl.innerHTML = '<div class="state-msg"><span class="emoji">📦</span>Products will appear here once available.</div>';
+          return;
+        }
+
+        statusEl.textContent = `Showing ${items.length} in-stock product${items.length > 1 ? 's' : ''}`;
+        renderProducts(items);
+      } catch {
+        statusEl.textContent = 'Network error. Is the server running?';
+      }
+    }
+
     // ── SEARCH ──────────────────────────────────────────────────────────────
     async function doSearch() {
       const query = searchInput.value.trim();
@@ -309,15 +351,7 @@
         statusEl.textContent = `${items.length} result${items.length > 1 ? 's' : ''} for "${query}"`;
 
         // Render each product as a card
-        resultsEl.innerHTML = items.map((p, i) => `
-          <div class="product-card" style="animation-delay:${i * 50}ms">
-            <div class="product-id">#${p.id}</div>
-            <div class="product-info">
-              <div class="product-name">${escapeHtml(p.name)}</div>
-              <div class="product-desc">${escapeHtml(p.description || 'No description available.')}</div>
-            </div>
-          </div>
-        `).join('');
+        renderProducts(items);
 
       } catch {
         statusEl.textContent = 'Network error. Is the server running?';
@@ -340,6 +374,8 @@
       await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
       window.location.href = '/login.html';
     });
+
+    loadInitialProducts();
 
     // ── SECURITY: escape HTML to prevent XSS ────────────────────────────────
     // If a product name contained script tags, this prevents it from running
