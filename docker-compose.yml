@@ -17,21 +17,9 @@ services:
     networks:
       - app_network
     healthcheck:
-      
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "appuser",
-          "-papppassword",
-        ]
-      interval: 5s 
-      timeout: 3s 
-      retries: 10 
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "appuser", "-papppassword"]
+      interval: 10s     
+      timeout: 5s       
   # ── Web Application ─────────────────────────────────────────────────────────
   app:
     build: . 
@@ -52,7 +40,8 @@ services:
         condition: service_healthy
     networks:
       - app_network
-  # Adminer is a lightweight web-based MySQL client for managing the database.
+
+  # Adminer is a lightweight web-based MySQL client for managing the database.Visit http://localhost:8080 to view DB
   adminer:
     image: adminer:latest
     container_name: productapp_adminer

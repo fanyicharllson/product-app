@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Products — ProductApp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --card: #16161f;
+      --border: #1e1e2e;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.2);
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --error: #ff6b6b;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #usernameDisplay {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    #usernameDisplay span {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    #logoutBtn {
+      padding: 7px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    #logoutBtn:hover {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px 24px 40px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    #searchInput {
+      flex: 1;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #searchInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    #searchInput::placeholder { color: var(--muted); }
+
+    #searchBtn {
+      padding: 14px 22px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+
+    #searchBtn:hover {
+      opacity: 0.9;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    #searchBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── RESULTS ── */
+    #statusText {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    #results {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      animation: fadeIn 0.3s ease both;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .product-card:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .product-id {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-glow);
+      border: 1px solid rgba(108,99,255,0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .product-info { flex: 1; }
+
+    .product-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .product-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Empty / error states */
+    .state-msg {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .state-msg .emoji { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">⬡ ProductApp</div>
+    <div class="nav-right">
+      <div id="usernameDisplay">Signed in</div>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>Product Search</h1>
+      <p>Search across our catalogue by name or description</p>
+    </div>
+
+    <div class="search-wrap">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search for a product..."
+        autocomplete="off"
+      />
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="statusText"></div>
+    <div id="results"></div>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn   = document.getElementById('searchBtn');
+    const resultsEl   = document.getElementById('results');
+    const statusEl    = document.getElementById('statusText');
+    const logoutBtn   = document.getElementById('logoutBtn');
+
+    // ── SEARCH ──────────────────────────────────────────────────────────────
+    async function doSearch() {
+      const query = searchInput.value.trim();
+      if (!query) return;
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = 'Searching...';
+      statusEl.textContent = '';
+      resultsEl.innerHTML = '';
+
+      try {
+        // GET request — query goes in the URL as a query parameter: ?q=...
+        const res = await fetch(`/products/search?q=${encodeURIComponent(query)}`, {
+          credentials: 'include' // Sends session cookie so server knows we're logged in
+        });
+
+        if (res.status === 302 || res.redirected) {
+          // Session expired — send back to login
+          window.location.href = '/login.html';
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.textContent = data.error || 'Search failed.';
+          return;
+        }
+
+        const items = data.results;
+
+        if (items.length === 0) {
+          resultsEl.innerHTML = `
+            <div class="state-msg">
+              <span class="emoji">🔍</span>
+              No products found for "<strong>${query}</strong>"
+            </div>`;
+          statusEl.textContent = '';
+          return;
+        }
+
+        statusEl.textContent = `${items.length} result${items.length > 1 ? 's' : ''} for "${query}"`;
+
+        // Render each product as a card
+        resultsEl.innerHTML = items.map((p, i) => `
+          <div class="product-card" style="animation-delay:${i * 50}ms">
+            <div class="product-id">#${p.id}</div>
+            <div class="product-info">
+              <div class="product-name">${escapeHtml(p.name)}</div>
+              <div class="product-desc">${escapeHtml(p.description || 'No description available.')}</div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch {
+        statusEl.textContent = 'Network error. Is the server running?';
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Search';
+      }
+    }
+
+    // Search on button click
+    searchBtn.addEventListener('click', doSearch);
+
+    // Search on pressing Enter key in the input
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    // ── LOGOUT ──────────────────────────────────────────────────────────────
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    });
+
+    // ── SECURITY: escape HTML to prevent XSS ────────────────────────────────
+    // If a product name contained <script>alert(1)</script>, this prevents it from running
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
