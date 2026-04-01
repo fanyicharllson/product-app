@@ -4,8 +4,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
-import authRoutes from "./routes/auth.js";
-import productRoutes from "./routes/products.js";
+import authRoutes from "./routes/auth";
+import productRoutes from "./routes/products";
 
 dotenv.config();
 
@@ -38,7 +38,7 @@ app.use(
   }),
 );
 
-app.use(express.static(path.join(__dirname, "../../public")));
+app.use(express.static(path.join(__dirname, "../public")));
 
 // ─── ROUTES
 

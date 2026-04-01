@@ -342,7 +342,7 @@
     });
 
     // ── SECURITY: escape HTML to prevent XSS ────────────────────────────────
-    // If a product name contained <script>alert(1)</script>, this prevents it from running
+    // If a product name contained script tags, this prevents it from running
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;

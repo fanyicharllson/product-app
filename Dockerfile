@@ -17,5 +17,5 @@ COPY . .
 # Expose port 3000 to allow external access to the app
 EXPOSE 3000
 
-# The command that runs when the container starts.
-CMD ["node", "--import", "tsx/esm", "src/server.ts"]
+# Start the app
+CMD ["npx", "tsx", "src/server.ts"]
